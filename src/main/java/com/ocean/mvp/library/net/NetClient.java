@@ -504,6 +504,14 @@ public class NetClient {
         }
     }
 
+    public void sendByteMessageByUdp(String ip,int port,byte[] bytes){
+        socketClient.sendByteByUdp(ip,port,bytes);
+    }
+
+    public void sendTextMessageByUdp(String ip,int port,String msg){
+        socketClient.sendTextByUDP(ip,port,msg);
+    }
+
     private Map<Long, NetRequest> requestMap = new HashMap<Long, NetRequest>();
 
     protected static class BaseHandler extends Handler {

@@ -1,6 +1,7 @@
 package com.ocean.mvp.library.net;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.ocean.mvp.library.utils.L;
@@ -43,7 +44,7 @@ public class SocketManager {
     /**
      * 默认UDP监听的接口
      */
-    public final static int DEFAULT_UDPSERVER_PORT = 8890;
+    public final static int DEFAULT_UDPSERVER_PORT = 9999;
 
     /**
      * 默认TCP监听的接口
@@ -277,6 +278,15 @@ public class SocketManager {
         try {
             InetAddress host = InetAddress.getByName(mAddress);
             getExecutorService().execute(new UDPSendRunnable(mDatagramSocket, host, mPort, msg));
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendByteByUdp(String ip,int port,byte[] bytes){
+        try {
+            InetAddress host = InetAddress.getByName(ip);
+            getExecutorService().execute(new UDPSendRunnable(mDatagramSocket, host, port, bytes));
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
@@ -652,7 +662,8 @@ public class SocketManager {
         DatagramSocket client;
         private InetAddress mAddress;
         private int mPort;
-        private String msg;
+        private String msg = "";
+        private byte[] bytes;
 
         public UDPSendRunnable(DatagramSocket client, InetAddress mAddress, int mPort, String msg) {
             this.client = client;
@@ -661,12 +672,24 @@ public class SocketManager {
             this.msg = msg;
         }
 
+        public UDPSendRunnable(DatagramSocket client, InetAddress mAddress, int mPort, byte[] bytes) {
+            this.client = client;
+            this.mAddress = mAddress;
+            this.mPort = mPort;
+            this.bytes = bytes;
+        }
+
         @Override
         public void run() {
             try {
                 if (client == null)
                     client = new DatagramSocket();
-                byte[] sendBuf = msg.getBytes();
+                byte[] sendBuf;
+                if (!TextUtils.isEmpty(msg)){
+                    sendBuf = msg.getBytes();
+                }else {
+                    sendBuf = bytes;
+                }
                 DatagramPacket sendPacket = new DatagramPacket(sendBuf, sendBuf.length, mAddress, mPort);
                 client.send(sendPacket);
             } catch (Exception e) {
